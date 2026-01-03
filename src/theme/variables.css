@@ -1,2 +1,22 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+
+:root {
+  /* KoiShop Premium Theme */
+  --ion-color-primary: #D90429; /* Koi Red */
+  --ion-color-primary-rgb: 217, 4, 41;
+  
+  --ion-font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+/* Make the Tab Bar look modern */
+ion-tab-bar {
+  --border: 0;
+  /* --background: #ffffff; */
+  /* border-top: 1px solid #f0f0f0; */
+  height: 65px;
+}
+
+ion-tab-button {
+  --color-selected: var(--ion-color-primary);
+}
