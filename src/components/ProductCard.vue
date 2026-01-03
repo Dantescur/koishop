@@ -1,46 +1,50 @@
 <template>
   <ion-card class="product-card" @click="handleCardClick">
     <!-- Image Section -->
-    <div class="image-wrapper">
-      <img :src="imageSrc" :alt="product.name" loading="lazy" class="product-image" @error="handleImageError" />
+    <div class="image-container">
+      <img :src="imageSrc" :alt="product.name" loading="lazy" @error="handleImageError" />
 
-      <!-- Status Badge -->
-      <div v-if="isOutOfStock" class="badge badge-danger">
-        Agotado
-      </div>
-      <div v-else-if="isLowStock" class="badge badge-warning">
-        ¡Últimas unidades!
+      <!-- Discount Badge (if applicable) -->
+      <div v-if="hasDiscount" class="discount-badge">
+        -{{ discountPercent }}%
       </div>
 
-      <!-- Price Badge -->
-      <div class="price-badge">
-        {{ formattedPrice }}
+      <!-- Stock Status -->
+      <div v-if="isOutOfStock" class="stock-badge sold-out">
+        AGOTADO
+      </div>
+      <div v-else-if="isLowStock" class="stock-badge low-stock">
+        ¡SOLO {{ product.stock_quantity }}!
       </div>
     </div>
 
-    <!-- Content Section -->
-    <ion-card-header class="card-header">
-      <ion-card-title class="product-title">
-        {{ product.name }}
-      </ion-card-title>
-
-      <ion-card-subtitle v-if="product.description" class="product-subtitle">
-        {{ truncatedDescription }}
-      </ion-card-subtitle>
-
-      <!-- Stock Info -->
-      <div class="stock-indicator" :class="stockClass">
-        <ion-icon :icon="stockIcon" class="stock-icon" />
-        <span>{{ stockText }}</span>
+    <!-- Product Info -->
+    <div class="product-info">
+      <!-- Price Section - Prominent like Temu/Shein -->
+      <div class="price-section">
+        <div class="current-price">${{ product.price.toFixed(2) }}</div>
+        <div v-if="hasDiscount" class="original-price">${{ originalPrice }}</div>
       </div>
-    </ion-card-header>
 
-    <!-- Actions -->
-    <div class="card-footer">
-      <ion-button class="add-button" expand="block" :disabled="isOutOfStock"
-        :color="isOutOfStock ? 'medium' : 'primary'" @click.stop="handleAddToCart">
-        <ion-icon v-if="!isOutOfStock" slot="start" :icon="cartOutline" />
-        {{ buttonText }}
+      <!-- Product Name - Compact -->
+      <div class="product-name">{{ product.name }}</div>
+
+      <!-- Quick Stats Row -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <ion-icon :icon="starIcon" class="icon-star" />
+          <span>4.5</span>
+        </div>
+        <div class="stat-divider">|</div>
+        <div class="stat-item">
+          <span class="sold-count">{{ soldCount }} vendidos</span>
+        </div>
+      </div>
+
+      <!-- Add to Cart Button - Always visible, Shein style -->
+      <ion-button class="quick-add-btn" size="small" fill="clear" :disabled="isOutOfStock"
+        @click.stop="handleAddToCart">
+        <ion-icon slot="icon-only" :icon="isOutOfStock ? closeIcon : cartIcon" />
       </ion-button>
     </div>
   </ion-card>
@@ -52,88 +56,47 @@ import { useCartStore } from '@/stores/cart';
 import { Tables } from '@/types/database.types';
 import {
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
   IonButton,
   IonIcon
 } from '@ionic/vue';
-import { cartOutline, checkmarkCircle, alertCircle, closeCircle } from 'ionicons/icons';
+import { cart, star, close } from 'ionicons/icons';
 
-// Props
 const props = defineProps<{
   product: Tables<'products'>
 }>();
 
-// Emits
 const emit = defineEmits<{
   'show-details': [product: Tables<'products'>]
 }>();
 
-// Store
 const cartStore = useCartStore();
-
-// Local state
 const imageSrc = ref(props.product.image_url || '/placeholder-image.jpg');
-const imageLoadError = ref(false);
 
-// Computed properties
+// Icons
+const cartIcon = cart;
+const starIcon = star;
+const closeIcon = close;
+
+// Computed
 const isOutOfStock = computed(() => props.product.stock_quantity <= 0);
 const isLowStock = computed(() => props.product.stock_quantity > 0 && props.product.stock_quantity <= 5);
 
-const formattedPrice = computed(() => {
-  const price = props.product.price;
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price);
-});
+// Mock data - replace with real data from your product object
+const hasDiscount = computed(() => false); // Add discount logic
+const discountPercent = computed(() => 25);
+const originalPrice = computed(() => (props.product.price * 1.25).toFixed(2));
+const soldCount = computed(() => Math.floor(Math.random() * 500) + 100); // Mock sold count
 
-const truncatedDescription = computed(() => {
-  const desc = props.product.description;
-  if (!desc) return '';
-  return desc.length > 80 ? `${desc.substring(0, 80)}...` : desc;
-});
-
-const stockText = computed(() => {
-  const qty = props.product.stock_quantity;
-  if (qty <= 0) return 'Sin stock';
-  if (qty <= 5) return `Solo ${qty} disponibles`;
-  return `${qty} disponibles`;
-});
-
-const stockClass = computed(() => {
-  if (isOutOfStock.value) return 'stock-out';
-  if (isLowStock.value) return 'stock-low';
-  return 'stock-available';
-});
-
-const stockIcon = computed(() => {
-  if (isOutOfStock.value) return closeCircle;
-  if (isLowStock.value) return alertCircle;
-  return checkmarkCircle;
-});
-
-const buttonText = computed(() => {
-  return isOutOfStock.value ? 'Agotado' : 'Agregar al carrito';
-});
-
-// Methods
 const handleImageError = () => {
-  if (!imageLoadError.value) {
-    imageLoadError.value = true;
-    imageSrc.value = '/placeholder-image.jpg';
-  }
+  imageSrc.value = '/placeholder-image.jpg';
 };
 
 const handleAddToCart = () => {
   if (isOutOfStock.value) return;
-
   cartStore.addItem(props.product);
 
-  // Optional: Add haptic feedback on mobile
   if ('vibrate' in navigator) {
-    navigator.vibrate(50);
+    navigator.vibrate(30);
   }
 };
 
@@ -144,253 +107,295 @@ const handleCardClick = () => {
 
 <style scoped>
 .product-card {
-  --background: #ffffff;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  --background: #fff;
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: none;
+  border: 1px solid #f0f0f0;
   margin: 0;
-}
-
-.product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .product-card:active {
-  transform: translateY(-2px);
-}
-
-/* Image Section */
-.image-wrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-  overflow: hidden;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.08);
-}
-
-/* Badges */
-.badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 2;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.badge-danger {
-  background: rgba(var(--ion-color-danger-rgb, 235, 68, 90), 0.95);
-  color: white;
-}
-
-.badge-warning {
-  background: rgba(var(--ion-color-warning-rgb, 255, 206, 84), 0.95);
-  color: #333;
-}
-
-.price-badge {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: linear-gradient(135deg,
-      var(--ion-color-primary, #3880ff) 0%,
-      var(--ion-color-primary-shade, #3171e0) 100%);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 24px;
-  font-weight: 700;
-  font-size: 1.125rem;
-  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.4);
-  backdrop-filter: blur(8px);
-}
-
-/* Content Section */
-.card-header {
-  padding: 16px;
-  padding-bottom: 8px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.product-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #1a1a1a;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.product-subtitle {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: #666;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Stock Indicator */
-.stock-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
-.stock-icon {
-  font-size: 1rem;
-}
-
-.stock-available {
-  color: var(--ion-color-success, #2dd36f);
-}
-
-.stock-low {
-  color: var(--ion-color-warning, #ffc409);
-}
-
-.stock-out {
-  color: var(--ion-color-danger, #eb445a);
-}
-
-/* Footer */
-.card-footer {
-  padding: 0 16px 16px;
-  margin-top: auto;
-}
-
-.add-button {
-  --border-radius: 12px;
-  --box-shadow: none;
-  height: 44px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  text-transform: none;
-  letter-spacing: 0.3px;
-  transition: all 0.2s ease;
-}
-
-.add-button:not([disabled]):hover {
-  transform: scale(1.02);
-}
-
-.add-button:not([disabled]):active {
   transform: scale(0.98);
 }
 
-/* Responsive Design */
+/* Image Container */
+.image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #fafafa;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Badges - Temu/Shein Style */
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ff3b3b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stock-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.stock-badge.sold-out {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.stock-badge.low-stock {
+  background: #ff9500;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Product Info Section */
+.product-info {
+  padding: 8px;
+  position: relative;
+}
+
+/* Price Section - Bold and Prominent */
+.price-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.current-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff3b3b;
+  line-height: 1;
+}
+
+.original-price {
+  font-size: 0.875rem;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+/* Product Name - Compact */
+.product-name {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: #333;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 2.6em;
+}
+
+/* Stats Row - Shein/Temu Style */
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.icon-star {
+  font-size: 0.875rem;
+  color: #ffa500;
+}
+
+.stat-divider {
+  color: #e0e0e0;
+}
+
+.sold-count {
+  color: #999;
+}
+
+/* Quick Add Button - Floating bottom right */
+.quick-add-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  --background: #fff;
+  --color: #333;
+  --border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 3;
+}
+
+.quick-add-btn:not([disabled]) {
+  --background: #ff3b3b;
+  --background-activated: #e63333;
+  --color: white;
+}
+
+.quick-add-btn ion-icon {
+  font-size: 1.125rem;
+}
+
+.quick-add-btn:disabled {
+  --background: #f5f5f5;
+  --color: #ccc;
+  opacity: 1;
+}
+
+/* Responsive */
 @media (max-width: 576px) {
   .product-card {
-    border-radius: 12px;
+    border-radius: 6px;
   }
 
-  .product-title {
-    font-size: 1rem;
+  .current-price {
+    font-size: 1.125rem;
   }
 
-  .product-subtitle {
-    font-size: 0.8125rem;
+  .product-name {
+    font-size: 0.75rem;
   }
 
-  .price-badge {
-    font-size: 1rem;
-    padding: 6px 12px;
-  }
-
-  .add-button {
-    height: 40px;
-    font-size: 0.875rem;
-  }
-
-  .badge {
+  .stats-row {
     font-size: 0.6875rem;
-    padding: 5px 10px;
+  }
+
+  .quick-add-btn {
+    width: 28px;
+    height: 28px;
+    bottom: 4px;
+    right: 4px;
+  }
+
+  .discount-badge,
+  .stock-badge {
+    font-size: 0.625rem;
+    padding: 3px 6px;
   }
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
-  .product-card {
-    max-width: 320px;
-    margin: 0 auto;
-  }
-}
-
-/* Touch devices */
-@media (hover: none) and (pointer: coarse) {
-  .product-card:hover {
-    transform: none;
-  }
-
+/* Touch feedback */
+@media (hover: none) {
   .product-card:active {
-    transform: scale(0.97);
-    transition: transform 0.1s ease;
-  }
-
-  .product-image {
-    transform: none !important;
+    background: #fafafa;
   }
 }
 
-/* Dark mode support */
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   .product-card {
-    --background: #1e1e1e;
+    --background: #1a1a1a;
+    border-color: #2a2a2a;
   }
 
-  .product-title {
-    color: #ffffff;
+  .image-container {
+    background: #0a0a0a;
   }
 
-  .product-subtitle {
-    color: #b0b0b0;
+  .product-name {
+    color: #e0e0e0;
   }
 
-  .image-wrapper {
-    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+  .stats-row {
+    color: #999;
+  }
+
+  .quick-add-btn {
+    --background: #2a2a2a;
+    --color: #fff;
+  }
+
+  .quick-add-btn:not([disabled]) {
+    --background: #ff3b3b;
   }
 }
 
-/* Accessibility */
-.product-card:focus-visible {
-  outline: 2px solid var(--ion-color-primary);
-  outline-offset: 2px;
+/* Grid Layout Helper (use in parent component) */
+/* 
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 8px;
 }
 
-.add-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+@media (min-width: 576px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
 }
+
+@media (min-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .products-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+*/
 </style>
