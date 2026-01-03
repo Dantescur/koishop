@@ -35,6 +35,24 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
+    function removeItemCompletely(productId: string) {
+        const index = items.value.findIndex(i => i.id === productId);
+        if (index > -1) {
+            items.value.splice(index, 1);
+        }
+    }
+
+    function decrementItem(productId: string) {
+        const index = items.value.findIndex(i => i.id === productId);
+        if (index > -1) {
+            if (items.value[index].quantity > 1) {
+                items.value[index].quantity--;
+            } else {
+                items.value.splice(index, 1);
+            }
+        }
+    }
+
     function generateWhatsAppLink() {
         const phoneNumber = "5354149326";
         const intro = "¡Hola! Quisiera realizar el siguiente pedido en KoiShop:\n\n";
@@ -50,5 +68,5 @@ export const useCartStore = defineStore('cart', () => {
         return `https://wa.me/${phoneNumber}?text=${message}`;
     }
 
-    return { items, totalItems, totalPrice, totalWeight, addItem, removeItem, generateWhatsAppLink };
+    return { items, totalItems, totalPrice, totalWeight, addItem, decrementItem, removeItemCompletely, removeItem, generateWhatsAppLink };
 }, { persist: true });

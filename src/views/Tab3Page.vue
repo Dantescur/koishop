@@ -20,9 +20,15 @@
             <h2>{{ item.name }}</h2>
             <p>${{ item.price }} x {{ item.quantity }}</p>
           </ion-label>
-          <ion-button slot="end" fill="clear" color="danger" @click="cart.removeItem(item.id)">
-            <ion-icon :icon="trashOutline"></ion-icon>
-          </ion-button>
+          <div slot="end" class="quantity-controls">
+            <ion-button size="small" fill="clear" @click="cart.decrementItem(item.id)">
+              <ion-icon :icon="removeCircleOutline"></ion-icon>
+            </ion-button>
+            <span class="quantity">{{ item.quantity }}</span>
+            <ion-button size="small" fill="clear" @click="cart.addItem(item)">
+              <ion-icon :icon="addCircleOutline"></ion-icon>
+            </ion-button>
+          </div>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -42,7 +48,7 @@
 
 <script setup lang="ts">
 import { useCartStore } from '@/stores/cart';
-import { cartOutline, trashOutline, logoWhatsapp } from 'ionicons/icons';
+import { cartOutline, logoWhatsapp, removeCircleOutline, addCircleOutline } from 'ionicons/icons';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonThumbnail, IonLabel, IonButton, IonIcon, IonFooter } from '@ionic/vue';
 
 const cart = useCartStore();

@@ -15,6 +15,9 @@
 
         <ion-tab-button tab="tab3" href="/tabs/tab3">
           <ion-icon aria-hidden="true" :icon="cartOutline" />
+          <ion-badge v-if="cart.totalItems > 0" color="danger">
+            {{ cart.totalItems }}
+          </ion-badge>
           <ion-label>Carrito</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
@@ -23,6 +26,8 @@
 </template>
 
 <script setup lang="ts">
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
+import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, IonBadge } from '@ionic/vue';
 import { homeOutline, copyOutline, cartOutline } from 'ionicons/icons';
+import { useCartStore } from '@/stores/cart';
+const cart = useCartStore();
 </script>
