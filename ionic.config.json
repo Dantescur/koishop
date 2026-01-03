@@ -1,0 +1,7 @@
+{
+  "name": "koishop",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
