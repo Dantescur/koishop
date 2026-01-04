@@ -56,10 +56,44 @@ watch(selectedSlug, fetchData);
       <ion-grid>
         <ion-row>
           <ion-col size="6" v-for="p in products" :key="p.id">
-            <ProductCard :product="p" @add="cart.addItem(p)" />
+            <ProductCard class="products-grid" :product="p" @add="cart.addItem(p)" />
           </ion-col>
         </ion-row>
       </ion-grid>
     </ion-content>
   </ion-page>
 </template>
+
+<style>
+.products-grid {
+  display: grid;
+}
+
+@media (min-width: 576px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .products-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+</style>

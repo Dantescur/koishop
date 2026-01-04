@@ -2,7 +2,7 @@
   <ion-card class="product-card" @click="handleCardClick">
     <!-- Image Section -->
     <div class="image-container">
-      <img :src="imageSrc" :alt="product.name" loading="lazy" @error="handleImageError" />
+      <ion-img :src="imageSrc" :alt="product.name" loading="lazy" @error="handleImageError"></ion-img>
 
       <!-- Discount Badge (if applicable) -->
       <div v-if="hasDiscount" class="discount-badge">
@@ -30,7 +30,7 @@
       <div class="product-name">{{ product.name }}</div>
 
       <!-- Quick Stats Row -->
-      <div class="stats-row">
+      <!-- <div class="stats-row">
         <div class="stat-item">
           <ion-icon :icon="starIcon" class="icon-star" />
           <span>4.5</span>
@@ -39,7 +39,7 @@
         <div class="stat-item">
           <span class="sold-count">{{ soldCount }} vendidos</span>
         </div>
-      </div>
+      </div> -->
 
       <!-- Add to Cart Button - Always visible, Shein style -->
       <ion-button class="quick-add-btn" size="small" fill="clear" :disabled="isOutOfStock"
@@ -57,9 +57,10 @@ import { Tables } from '@/types/database.types';
 import {
   IonCard,
   IonButton,
-  IonIcon
+  IonIcon,
+  IonImg
 } from '@ionic/vue';
-import { cart, star, close } from 'ionicons/icons';
+import { cart, close } from 'ionicons/icons';
 
 const props = defineProps<{
   product: Tables<'products'>
@@ -74,7 +75,7 @@ const imageSrc = ref(props.product.image_url || '/placeholder-image.jpg');
 
 // Icons
 const cartIcon = cart;
-const starIcon = star;
+// const starIcon = star;
 const closeIcon = close;
 
 // Computed
@@ -85,7 +86,7 @@ const isLowStock = computed(() => props.product.stock_quantity > 0 && props.prod
 const hasDiscount = computed(() => false); // Add discount logic
 const discountPercent = computed(() => 25);
 const originalPrice = computed(() => (props.product.price * 1.25).toFixed(2));
-const soldCount = computed(() => Math.floor(Math.random() * 500) + 100); // Mock sold count
+// const soldCount = computed(() => Math.floor(Math.random() * 500) + 100); // Mock sold count
 
 const handleImageError = () => {
   imageSrc.value = '/placeholder-image.jpg';
@@ -225,6 +226,7 @@ const handleCardClick = () => {
   margin-bottom: 6px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -360,42 +362,4 @@ const handleCardClick = () => {
     --background: #ff3b3b;
   }
 }
-
-/* Grid Layout Helper (use in parent component) */
-/* 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 8px;
-}
-
-@media (min-width: 576px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 12px;
-  }
-}
-
-@media (min-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .products-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    padding: 16px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .products-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-*/
 </style>

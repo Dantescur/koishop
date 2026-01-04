@@ -14,7 +14,7 @@
       <ion-list v-else>
         <ion-item v-for="item in cart.items" :key="item.id">
           <ion-thumbnail slot="start">
-            <img :src="item.image_url ?? ''" />
+            <ion-img :src="item.image_url ?? ''"></ion-img>
           </ion-thumbnail>
           <ion-label>
             <h2>{{ item.name }}</h2>
@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { useCartStore } from '@/stores/cart';
 import { cartOutline, logoWhatsapp, removeCircleOutline, addCircleOutline } from 'ionicons/icons';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonThumbnail, IonLabel, IonButton, IonIcon, IonFooter } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonThumbnail, IonLabel, IonButton, IonIcon, IonFooter, IonImg } from '@ionic/vue';
 
 const cart = useCartStore();
 
