@@ -1,62 +1,3 @@
-<!-- src/layouts/MainLayout.vue -->
-<template>
-    <ion-app>
-        <!-- Main Navigation -->
-        <ion-header class="ion-no-border">
-            <ion-toolbar>
-                <ion-title>{{ currentPageTitle }}</ion-title>
-
-                <!-- Optional: Add a back button for non-home pages -->
-                <ion-buttons slot="start" v-if="showBackButton">
-                    <ion-button @click="goBack">
-                        <ion-icon :icon="chevronBack" slot="icon-only" />
-                    </ion-button>
-                </ion-buttons>
-
-                <!-- Optional: Add cart icon -->
-                <ion-buttons slot="end">
-                    <ion-button router-link="/cart" class="cart-button">
-                        <ion-icon :icon="cartOutline" />
-                        <ion-badge v-if="cart.totalItems > 0" color="danger">
-                            {{ cart.totalItems }}
-                        </ion-badge>
-                    </ion-button>
-                </ion-buttons>
-            </ion-toolbar>
-        </ion-header>
-
-        <!-- Main Content -->
-        <ion-content>
-            <slot />
-        </ion-content>
-
-        <!-- Bottom Navigation -->
-        <ion-footer class="ion-no-border">
-            <ion-toolbar>
-                <ion-segment v-model="activeRoute" @ionChange="handleSegmentChange" class="bottom-nav">
-                    <ion-segment-button value="/home">
-                        <ion-icon :icon="homeOutline" />
-                        <ion-label>Inicio</ion-label>
-                    </ion-segment-button>
-
-                    <ion-segment-button value="/catalog">
-                        <ion-icon :icon="copyOutline" />
-                        <ion-label>Catálogo</ion-label>
-                    </ion-segment-button>
-
-                    <ion-segment-button value="/cart">
-                        <ion-icon :icon="cartOutline" />
-                        <ion-label>Carrito</ion-label>
-                        <ion-badge v-if="cart.totalItems > 0" color="danger" class="nav-badge">
-                            {{ cart.totalItems }}
-                        </ion-badge>
-                    </ion-segment-button>
-                </ion-segment>
-            </ion-toolbar>
-        </ion-footer>
-    </ion-app>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -120,6 +61,56 @@ watch(() => route.path, (newPath) => {
 });
 </script>
 
+
+
+<template>
+    <ion-app>
+        <!-- Main Navigation -->
+        <ion-header class="ion-no-border">
+            <ion-toolbar>
+                <ion-title>{{ currentPageTitle }}</ion-title>
+
+                <!-- Optional: Add a back button for non-home pages -->
+                <ion-buttons slot="start" v-if="showBackButton">
+                    <ion-button @click="goBack">
+                        <ion-icon :icon="chevronBack" slot="icon-only" />
+                    </ion-button>
+                </ion-buttons>
+            </ion-toolbar>
+        </ion-header>
+
+        <!-- Main Content -->
+        <ion-content>
+            <slot />
+        </ion-content>
+
+        <!-- Bottom Navigation -->
+        <ion-footer class="ion-no-border">
+            <ion-toolbar>
+                <ion-segment v-model="activeRoute" @ionChange="handleSegmentChange" class="bottom-nav">
+                    <ion-segment-button value="/home">
+                        <ion-icon :icon="homeOutline" />
+                        <ion-label>Inicio</ion-label>
+                    </ion-segment-button>
+
+                    <ion-segment-button value="/catalog">
+                        <ion-icon :icon="copyOutline" />
+                        <ion-label>Catálogo</ion-label>
+                    </ion-segment-button>
+
+                    <ion-segment-button value="/cart">
+                        <ion-icon :icon="cartOutline" />
+                        <ion-label>Carrito</ion-label>
+                        <ion-badge v-if="cart.totalItems > 0" color="danger" class="nav-badge">
+                            {{ cart.totalItems }}
+                        </ion-badge>
+                    </ion-segment-button>
+                </ion-segment>
+            </ion-toolbar>
+        </ion-footer>
+    </ion-app>
+</template>
+
 <style scoped>
 .bottom-nav {
     --background: white;
@@ -170,7 +161,7 @@ watch(() => route.path, (newPath) => {
     top: 0;
     right: 0;
     font-size: 10px;
-    padding: 2px 4px;
+    padding: 2px 6px;
     min-width: 16px;
     height: 16px;
 }
