@@ -1,10 +1,10 @@
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
+    <!-- <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-title>Mi Carrito</ion-title>
       </ion-toolbar>
-    </ion-header>
+    </ion-header> -->
 
     <ion-content>
       <!-- Empty Cart State -->
@@ -14,7 +14,7 @@
         <p class="empty-description">
           Explora nuestro catálogo y encuentra productos increíbles
         </p>
-        <ion-button fill="solid" router-link="/tabs/tab2" class="browse-btn">
+        <ion-button fill="solid" router-link="/catalog" class="browse-btn">
           Ver Catálogo
         </ion-button>
       </div>
@@ -116,9 +116,6 @@ import {
 } from 'ionicons/icons';
 import {
   IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonButton,
   IonIcon,

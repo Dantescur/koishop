@@ -39,12 +39,48 @@ import './theme/variables.css';
 const pinia = createPinia()
 pinia.use(piniaPLuginPersistedState)
 
-createApp(App)
+const app = createApp(App)
   .use(IonicVue)
   .use(pinia)
   .use(router)
-  .mount('#app');
 
-// router.isReady().then(() => {
-//   app.mount('#app');
-// });
+
+app.mount('#app');
+
+// PWA Service Worker Auto-Update Handler
+// The VitePWA plugin handles registration automatically
+// This just provides user feedback when updates are available
+if ('serviceWorker' in navigator) {
+  // Listen for service worker updates
+  navigator.serviceWorker.ready.then((registration) => {
+    console.log('✅ Service Worker is ready');
+
+    // Check for updates periodically (every hour)
+    setInterval(() => {
+      registration.update();
+    }, 60 * 60 * 1000);
+  });
+
+  // Handle service worker updates
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 New service worker activated, reloading page...');
+    window.location.reload();
+  });
+}
+
+// Log PWA installation status
+window.addEventListener('load', () => {
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+    || (window.navigator as any).standalone === true;
+
+  if (isInstalled) {
+    console.log('✅ App is running as installed PWA');
+  } else {
+    console.log('ℹ️ App is running in browser');
+  }
+});
+
+// Handle app installation event
+window.addEventListener('appinstalled', () => {
+  console.log('🎉 App was successfully installed!');
+});

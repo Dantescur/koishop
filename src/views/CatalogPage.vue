@@ -8,7 +8,6 @@ import {
   IonPage,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonSegment,
   IonSegmentButton,
   IonLabel,
@@ -122,9 +121,7 @@ watch(selectedSlug, fetchData);
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Catálogo</ion-title>
-      </ion-toolbar>
+
 
       <!-- Category Filter -->
       <ion-toolbar>

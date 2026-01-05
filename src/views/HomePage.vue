@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import {
   IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonRow,
   IonCol,
@@ -69,12 +66,6 @@ onMounted(fetchProducts);
 
 <template>
   <ion-page>
-    <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>KOISEND</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content>
       <!-- Hero Section -->
       <section class="hero-section">
@@ -91,7 +82,7 @@ onMounted(fetchProducts);
             Envía productos y recarga minutos desde cualquier lugar del mundo
           </p>
           <div class="hero-actions">
-            <ion-button fill="solid" size="large" class="hero-btn primary" router-link="/tabs/tab2">
+            <ion-button fill="solid" size="large" class="hero-btn primary" router-link="/catalog">
               Explorar Catálogo
               <ion-icon slot="end" :icon="arrowForwardOutline" />
             </ion-button>
@@ -146,7 +137,7 @@ onMounted(fetchProducts);
             <h2 class="section-title">Productos Destacados</h2>
             <p class="section-subtitle">Los más populares de esta semana</p>
           </div>
-          <ion-button fill="clear" size="small" router-link="/tabs/tab2" class="view-all-btn">
+          <ion-button fill="clear" size="small" router-link="/catalog" class="view-all-btn">
             Ver todos
             <ion-icon slot="end" :icon="arrowForwardOutline" />
           </ion-button>
@@ -162,7 +153,7 @@ onMounted(fetchProducts);
 
         <!-- Show All Products CTA -->
         <div class="show-more">
-          <ion-button expand="block" fill="outline" router-link="/tabs/tab2" class="show-more-btn">
+          <ion-button expand="block" fill="outline" router-link="/catalog" class="show-more-btn">
             Ver Todo el Catálogo
           </ion-button>
         </div>
