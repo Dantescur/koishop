@@ -148,9 +148,7 @@ const clearCart = async () => {
         text: 'Vaciar',
         role: 'destructive',
         handler: () => {
-          cart.items.forEach(item => {
-            cart.removeItemCompletely(item.id);
-          });
+          cart.clearCart()
         }
       }
     ]

@@ -45,28 +45,78 @@ const app = createApp(App)
   .use(router)
 
 
-app.mount('#app');
+// app.mount('#app');
 
-// PWA Service Worker Auto-Update Handler
-// The VitePWA plugin handles registration automatically
-// This just provides user feedback when updates are available
-if ('serviceWorker' in navigator) {
-  // Listen for service worker updates
-  navigator.serviceWorker.ready.then((registration) => {
-    console.log('✅ Service Worker is ready');
-
-    // Check for updates periodically (every hour)
-    setInterval(() => {
-      registration.update();
-    }, 60 * 60 * 1000);
-  });
-
-  // Handle service worker updates
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('🔄 New service worker activated, reloading page...');
-    window.location.reload();
-  });
+declare global {
+  interface Window {
+    pwaUpdateAvailable: boolean;
+    pwaUpdateHandler: (() => void) | null;
+    pwaDeferredPrompt: any;
+  }
 }
+
+window.pwaUpdateAvailable = false;
+window.pwaUpdateHandler = null;
+
+// PWA Service Worker Update Handler
+const registerServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    // Registrar el service worker
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('✅ Service Worker registrado con éxito:', registration.scope);
+
+        // Verificar actualizaciones periódicamente
+        setInterval(() => {
+          registration.update();
+        }, 60 * 60 * 1000); // Cada hora
+
+        // Escuchar actualizaciones encontradas
+        registration.addEventListener('updatefound', () => {
+          console.log('🔄 Nueva versión del Service Worker encontrada...');
+          const newWorker = registration.installing;
+
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('🎯 Nueva versión disponible!');
+                window.pwaUpdateAvailable = true;
+
+                // Emitir evento personalizado para notificar a la app
+                const event = new CustomEvent('pwaUpdateAvailable');
+                window.dispatchEvent(event);
+              }
+            });
+          }
+        });
+
+        // Manejar cambio de controller (nuevo service worker activado)
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            console.log('🔄 Nuevo Service Worker activado, recargando página...');
+            window.location.reload();
+          }
+        });
+
+      })
+      .catch((error) => {
+        console.error('❌ Error al registrar Service Worker:', error);
+      });
+  }
+};
+
+// Inicializar Service Worker
+if (import.meta.env.PROD) {
+  registerServiceWorker();
+}
+
+// Manejar evento de actualización de PWA
+window.addEventListener('pwaUpdateAvailable', () => {
+  console.log('📢 Nueva actualización disponible para la PWA');
+  // Aquí puedes mostrar una notificación al usuario
+});
 
 // Log PWA installation status
 window.addEventListener('load', () => {
@@ -84,3 +134,26 @@ window.addEventListener('load', () => {
 window.addEventListener('appinstalled', () => {
   console.log('🎉 App was successfully installed!');
 });
+
+app.mount('#app');
+
+// Exportar función para verificar actualizaciones manualmente
+export const checkForUpdates = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      return registration.update();
+    });
+  }
+};
+
+// Exportar función para activar actualización
+export const activateUpdate = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      if (registration.waiting) {
+        // Enviar mensaje al service worker waiting para que se active
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    });
+  }
+};

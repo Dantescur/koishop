@@ -68,5 +68,9 @@ export const useCartStore = defineStore('cart', () => {
     return `https://wa.me/${phoneNumber}?text=${message}`;
   }
 
-  return { items, totalItems, totalPrice, totalWeight, addItem, decrementItem, removeItemCompletely, removeItem, generateWhatsAppLink };
+  function clearCart() {
+    items.value = []
+  }
+
+  return { items, totalItems, totalPrice, totalWeight, addItem, decrementItem, removeItemCompletely, removeItem, generateWhatsAppLink, clearCart };
 }, { persist: true });

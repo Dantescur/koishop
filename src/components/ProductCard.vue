@@ -57,9 +57,6 @@
         </ion-button>
       </div>
     </div>
-
-    <!-- Success Ripple Animation -->
-    <div v-if="showSuccessRipple" class="success-ripple" />
   </ion-card>
 </template>
 
@@ -85,7 +82,6 @@ const emit = defineEmits<{
 
 const cartStore = useCartStore();
 const imageSrc = ref(props.product.image_url || '/placeholder-image.jpg');
-const showSuccessRipple = ref(false);
 
 // Icons
 const cartIcon = cart;
@@ -127,16 +123,11 @@ const handleImageError = () => {
   imageSrc.value = '/placeholder-image.jpg';
 };
 
-const handleAddToCart = () => {
+const handleAddToCart = (event: Event) => {
+  event.stopPropagation()
   if (isOutOfStock.value) return;
 
   cartStore.addItem(props.product);
-
-  // Show success animation
-  showSuccessRipple.value = true;
-  setTimeout(() => {
-    showSuccessRipple.value = false;
-  }, 600);
 
   // Haptic feedback
   if ('vibrate' in navigator) {
@@ -414,29 +405,6 @@ const handleCardClick = () => {
   opacity: 1;
 }
 
-/* === Success Ripple Animation === */
-.success-ripple {
-  position: absolute;
-  inset: 0;
-  background: var(--koi-success);
-  border-radius: var(--koi-radius-lg);
-  opacity: 0;
-  animation: ripple 0.6s ease-out;
-  pointer-events: none;
-  z-index: var(--koi-z-modal);
-}
-
-@keyframes ripple {
-  0% {
-    opacity: 0.4;
-    transform: scale(0.8);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(1.1);
-  }
-}
 
 /* === Responsive === */
 @media (max-width: 576px) {

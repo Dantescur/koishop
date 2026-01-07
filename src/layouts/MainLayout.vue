@@ -15,13 +15,13 @@ import {
     IonFooter,
     IonSegment,
     IonSegmentButton,
-    IonLabel
+    IonLabel,
 } from '@ionic/vue';
 import {
     homeOutline,
     copyOutline,
     cartOutline,
-    chevronBack
+    chevronBack,
 } from 'ionicons/icons';
 
 const router = useRouter();
@@ -59,6 +59,7 @@ const goBack = () => {
 watch(() => route.path, (newPath) => {
     activeRoute.value = newPath;
 });
+
 </script>
 
 
@@ -70,7 +71,6 @@ watch(() => route.path, (newPath) => {
             <ion-toolbar>
                 <ion-title>{{ currentPageTitle }}</ion-title>
 
-                <!-- Optional: Add a back button for non-home pages -->
                 <ion-buttons slot="start" v-if="showBackButton">
                     <ion-button @click="goBack">
                         <ion-icon :icon="chevronBack" slot="icon-only" />

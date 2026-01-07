@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
 import { supabase } from '@/lib/supabase';
+import RefresherComponent from '@/components/RefresherComponent.vue';
 import ProductCard from '@/components/ProductCard.vue';
 import { useCartStore } from '@/stores/cart';
 import { Tables } from '@/types/database.types';
@@ -26,6 +27,22 @@ const selectedSlug = ref('all');
 const cart = useCartStore();
 const isLoading = ref(true);
 const searchQuery = ref('');
+
+const refreshing = ref(false);
+
+const pullText = computed(() => {
+  if (searchQuery.value) {
+    return `Tira para buscar "${searchQuery.value}" de nuevo`;
+  }
+  return 'Tira para actualizar productos';
+});
+
+const refreshText = computed(() => {
+  if (searchQuery.value) {
+    return `Buscando "${searchQuery.value}"...`;
+  }
+  return 'Actualizando productos...';
+});
 
 const isModalOpen = ref(false)
 const selectedProduct = ref<Tables<'products'> | null>(null);
@@ -97,6 +114,24 @@ const fetchData = async () => {
   }
 };
 
+const handleRefresh = async (complete: () => void) => {
+  refreshing.value = true;
+
+  try {
+    await fetchData();
+
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.update();
+    }
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+  } finally {
+    refreshing.value = false;
+    complete(); // Call the complete callback
+  }
+};
+
 const showProductDetail = (product: Tables<'products'>) => {
   selectedProduct.value = product;
   isModalOpen.value = true;
@@ -121,8 +156,6 @@ watch(selectedSlug, fetchData);
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-
-
       <!-- Category Filter -->
       <ion-toolbar>
         <ion-segment v-model="selectedSlug" scrollable mode="md" class="category-segment">
@@ -137,15 +170,18 @@ watch(selectedSlug, fetchData);
 
       <!-- Search Bar with improved properties -->
       <ion-toolbar>
-        <ion-searchbar v-model="searchQuery" @ionInput="handleSearchInput"
-          placeholder="Buscar productos (ej: cafe, nino, telefono)..." animated mode="ios" class="custom-searchbar"
-          :debounce="300" show-clear-button="always" inputmode="search" enterkeyhint="search" type="search" />
+        <ion-searchbar v-model="searchQuery" @ionInput="handleSearchInput" placeholder="Buscar productos (ej: cafe)..."
+          animated mode="md" class="custom-searchbar" :debounce="300" show-clear-button="always" inputmode="search"
+          enterkeyhint="search" type="search" />
       </ion-toolbar>
     </ion-header>
 
     <ion-content>
+      <RefresherComponent @refresh="handleRefresh" :pulling-text="pullText" :refreshing-text="refreshText"
+        :disabled="isLoading" />
+
       <!-- Loading State -->
-      <div v-if="isLoading" class="loading-container">
+      <div v-if="isLoading && !refreshing" class="loading-container">
         <ion-spinner name="crescent" color="primary" />
         <p class="loading-text">Cargando productos...</p>
       </div>
@@ -192,18 +228,6 @@ watch(selectedSlug, fetchData);
 </template>
 
 <style scoped>
-/* === Custom Searchbar === */
-.custom-searchbar {
-  --background: var(--koi-neutral-100);
-  --border-radius: var(--koi-radius-lg);
-  --box-shadow: none;
-  --icon-color: var(--koi-neutral-500);
-  --placeholder-color: var(--koi-neutral-400);
-  --placeholder-opacity: 1;
-  --clear-button-color: var(--koi-neutral-500);
-  padding: var(--koi-space-2) var(--koi-space-4);
-}
-
 /* === Category Segment === */
 .category-segment {
   padding: var(--koi-space-2) var(--koi-space-4);
