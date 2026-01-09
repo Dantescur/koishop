@@ -1,4 +1,6 @@
+import { supabase } from "@/lib/supabase";
 import { Tables } from "@/types/database.types";
+import { alertController } from "@ionic/vue";
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 
@@ -68,9 +70,57 @@ export const useCartStore = defineStore('cart', () => {
     return `https://wa.me/${phoneNumber}?text=${message}`;
   }
 
+  async function importSharedItems(ids: string[]) {
+    for (const id of ids) {
+      // Fetch product data from Supabase by ID
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (data && !error) {
+        addItem(data);
+      }
+    }
+  }
+
+  async function handleSharedCart(ids: string[]) {
+    if (items.value.length > 0) {
+      const alert = await alertController.create({
+        header: 'Carrito Compartido',
+        message: 'Ya tienes productos en tu carrito. ¿Qué prefieres hacer?',
+        buttons: [
+          {
+            text: 'Combinar',
+            handler: () => {
+              importSharedItems(ids); // Add new ones to existing
+            }
+          },
+          {
+            text: 'Reemplazar',
+            role: 'destructive',
+            handler: () => {
+              clearCart(); // Wipe existing
+              importSharedItems(ids); // Add new ones
+            }
+          },
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          }
+        ]
+      });
+      await alert.present();
+    } else {
+      // If cart is empty, just import
+      importSharedItems(ids);
+    }
+  }
+
   function clearCart() {
     items.value = []
   }
 
-  return { items, totalItems, totalPrice, totalWeight, addItem, decrementItem, removeItemCompletely, removeItem, generateWhatsAppLink, clearCart };
+  return { items, totalItems, totalPrice, totalWeight, addItem, decrementItem, removeItemCompletely, removeItem, generateWhatsAppLink, handleSharedCart, importSharedItems, clearCart };
 }, { persist: true });

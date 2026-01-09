@@ -1,11 +1,5 @@
 <template>
   <ion-page>
-    <!-- <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Mi Carrito</ion-title>
-      </ion-toolbar>
-    </ion-header> -->
-
     <ion-content>
       <!-- Empty Cart State -->
       <div v-if="cart.items.length === 0" class="empty-cart">
@@ -25,6 +19,10 @@
         <div class="cart-items-section">
           <div class="section-header">
             <h3 class="section-title">Productos ({{ cart.totalItems }})</h3>
+            <ion-button fill="clear" @click="shareCart">
+              <ion-icon :icon="shareOutline" slot="start" />
+              Compartir Carrito
+            </ion-button>
             <ion-button fill="clear" size="small" color="danger" @click="clearCart">
               Limpiar todo
             </ion-button>
@@ -112,7 +110,8 @@ import {
   logoWhatsapp,
   trash,
   add,
-  remove
+  remove,
+  shareOutline
 } from 'ionicons/icons';
 import {
   IonPage,
@@ -134,6 +133,21 @@ const removeIcon = remove;
 const openWhatsApp = () => {
   window.open(cart.generateWhatsAppLink(), '_blank');
 };
+
+const shareCart = async () => {
+  const ids = cart.items.map(i => i.id).join(',')
+  const shareUrl = `koisend://cart?items=${ids}`
+
+  if (navigator.share !== undefined) {
+    await navigator.share({
+      title: 'Mi carrito en KOISEND',
+      text: 'Mira los productos que elegi',
+      url: shareUrl
+    })
+  } else {
+    navigator.clipboard.writeText(shareUrl)
+  }
+}
 
 const clearCart = async () => {
   const alert = await alertController.create({

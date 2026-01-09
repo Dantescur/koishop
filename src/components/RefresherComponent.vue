@@ -2,7 +2,7 @@
 <template>
     <ion-refresher slot="fixed" @ionRefresh="handleRefreshTriggered" :pull-min="props.pullMin" :pull-max="props.pullMax"
         :disabled="props.disabled" class="custom-refresher">
-        <ion-refresher-content :pulling-icon="props.pullingIcon" :pulling-text="pullingTextWithUpdate"
+        <ion-refresher-content :pulling-icon="pullingIcon" :pulling-text="pullingTextWithUpdate"
             :refreshing-spinner="props.refreshingSpinner" :refreshing-text="refreshingTextWithUpdate"
             class="custom-refresher-content" />
     </ion-refresher>

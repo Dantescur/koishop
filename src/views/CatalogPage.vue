@@ -12,6 +12,8 @@ import {
   IonSegment,
   IonSegmentButton,
   IonLabel,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonContent,
   IonGrid,
   IonRow,
@@ -29,6 +31,18 @@ const isLoading = ref(true);
 const searchQuery = ref('');
 
 const refreshing = ref(false);
+
+const itemsPerPage = 12;
+const currentPage = ref(0);
+const hasMoreData = ref(true);
+
+const loadCache = () => {
+  const cachedProds = localStorage.getItem(`cache_prods_${selectedSlug.value}`);
+  if (cachedProds) {
+    products.value = JSON.parse(cachedProds);
+    isLoading.value = false; // Show cached data immediately
+  }
+};
 
 const pullText = computed(() => {
   if (searchQuery.value) {
@@ -80,56 +94,62 @@ const filteredProducts = computed(() => {
   });
 });
 
-const fetchData = async () => {
-  isLoading.value = true;
+const fetchData = async (isFirstLoad = true) => {
+  if (isFirstLoad) {
+    currentPage.value = 0;
+    hasMoreData.value = true;
+    if (products.value?.length === 0) isLoading.value = true;
+  }
+
+  const from = currentPage.value * itemsPerPage;
+  const to = from + itemsPerPage - 1;
 
   try {
-    // Get Categories
-    const { data: catData } = await supabase
-      .from('categories')
-      .select('*')
-      .is('deleted_at', null)
-      .order('name');
-    categories.value = catData || [];
+    // 1. Fetch Categories (only on first load)
+    if (isFirstLoad && categories.value.length === 0) {
+      const { data: catData } = await supabase.from('categories').select('*').is('deleted_at', null).order('name');
+      categories.value = catData || [];
+    }
 
-    // Get Products based on selection
-    let query = supabase
-      .from('products')
-      .select('*')
-      .is('deleted_at', null);
+    // 2. Fetch Products with Range
+    let query = supabase.from('products').select('*').is('deleted_at', null).order('name').range(from, to);
 
     if (selectedSlug.value !== 'all') {
       const catId = categories.value.find(c => c.slug === selectedSlug.value)?.id;
-      if (catId) {
-        query = query.eq('category_id', catId);
-      }
+      if (catId) query = query.eq('category_id', catId);
     }
 
-    const { data: prodData } = await query.order('name');
-    products.value = prodData || [];
-  } catch (error) {
-    console.error('Error fetching data:', error);
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    if (data) {
+      if (isFirstLoad) {
+        products.value = data;
+        // Save to cache
+        localStorage.setItem(`cache_prods_${selectedSlug.value}`, JSON.stringify(data));
+      } else {
+        products.value?.push(...data);
+      }
+
+      if (data.length < itemsPerPage) hasMoreData.value = false;
+    }
+  } catch (err) {
+    console.error("Fetch error:", err);
   } finally {
     isLoading.value = false;
   }
 };
 
+const loadMore = async (ev: CustomEvent) => {
+  currentPage.value++;
+  await fetchData(false);
+  (ev.target as HTMLIonInfiniteScrollElement).complete();
+};
+
 const handleRefresh = async (complete: () => void) => {
-  refreshing.value = true;
-
-  try {
-    await fetchData();
-
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.update();
-    }
-  } catch (error) {
-    console.error('Error refreshing data:', error);
-  } finally {
-    refreshing.value = false;
-    complete(); // Call the complete callback
-  }
+  await fetchData(true);
+  complete();
 };
 
 const showProductDetail = (product: Tables<'products'>) => {
@@ -149,8 +169,12 @@ const handleSearchInput = (event: any) => {
   searchQuery.value = event.target.value || '';
 };
 
-onMounted(fetchData);
-watch(selectedSlug, fetchData);
+onMounted(() => {
+  loadCache();
+  fetchData(true);
+});
+
+watch(selectedSlug, () => fetchData(true));
 </script>
 
 <template>
@@ -220,6 +244,10 @@ watch(selectedSlug, fetchData);
             </ion-col>
           </ion-row>
         </ion-grid>
+
+        <ion-infinite-scroll @ionInfinite="loadMore" :disabled="!hasMoreData">
+          <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Cargando más productos..." />
+        </ion-infinite-scroll>
       </div>
     </ion-content>
 
