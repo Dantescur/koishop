@@ -1,4 +1,4 @@
-import { useBackButton, useIonRouter } from '@ionic/vue';
+import { useBackButton, UseBackButtonResult, useIonRouter } from '@ionic/vue';
 import { onUnmounted } from 'vue';
 
 /**
@@ -8,38 +8,37 @@ import { onUnmounted } from 'vue';
  * @param priority - Priority (default 101, higher than Ionic's overlay priority of 100)
  */
 export function useHardwareBackButton(
-    isOpen: boolean,
-    onClose: () => void,
-    priority: number = 101
+  isOpen: boolean,
+  onClose: () => void,
+  priority: number = 101
 ) {
-    let unregisterHandler: (() => void) | undefined;
+  let unregisterHandler: UseBackButtonResult | undefined
 
-    const registerHandler = () => {
-        if (isOpen && !unregisterHandler) {
-            unregisterHandler = useBackButton(priority, (processNextHandler) => {
-                onClose();
-                // Do NOT call processNextHandler - we want to consume the event
-            });
-        }
-    };
-
-    const unregister = () => {
-        if (unregisterHandler) {
-            unregisterHandler();
-            unregisterHandler = undefined;
-        }
-    };
-
-    // Auto-register/unregister based on isOpen changes
-    if (isOpen) {
-        registerHandler();
-    } else {
-        unregister();
+  const registerHandler = () => {
+    if (isOpen && !unregisterHandler) {
+      unregisterHandler = useBackButton(priority, () => {
+        onClose();
+      });
     }
+  };
 
-    onUnmounted(unregister);
+  const unregister = () => {
+    if (unregisterHandler) {
+      unregisterHandler;
+      unregisterHandler = undefined;
+    }
+  };
 
-    return { unregister };
+  // Auto-register/unregister based on isOpen changes
+  if (isOpen) {
+    registerHandler();
+  } else {
+    unregister();
+  }
+
+  onUnmounted(unregister);
+
+  return { unregister };
 }
 
 /**
@@ -47,18 +46,18 @@ export function useHardwareBackButton(
  * Should be used in the main layout component
  */
 export function useNavigationBackButton() {
-    const ionRouter = useIonRouter();
+  const ionRouter = useIonRouter();
 
-    useBackButton(0, (processNextHandler) => {
-        // Only navigate back if we're not on a main tab page
-        const currentPath = window.location.pathname;
-        const isOnMainTab = ['/home', '/catalog', '/cart'].includes(currentPath);
+  useBackButton(0, (processNextHandler) => {
+    // Only navigate back if we're not on a main tab page
+    const currentPath = window.location.pathname;
+    const isOnMainTab = ['/home', '/catalog', '/cart'].includes(currentPath);
 
-        if (!isOnMainTab && ionRouter.canGoBack()) {
-            ionRouter.back();
-        } else {
-            // Let other handlers (like modals) process the event
-            processNextHandler();
-        }
-    });
+    if (!isOnMainTab && ionRouter.canGoBack()) {
+      ionRouter.back();
+    } else {
+      // Let other handlers (like modals) process the event
+      processNextHandler();
+    }
+  });
 }
