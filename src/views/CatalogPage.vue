@@ -40,7 +40,7 @@ const loadCache = () => {
   const cachedProds = localStorage.getItem(`cache_prods_${selectedSlug.value}`);
   if (cachedProds) {
     products.value = JSON.parse(cachedProds);
-    isLoading.value = false; // Show cached data immediately
+    isLoading.value = false;
   }
 };
 
@@ -237,9 +237,9 @@ watch(selectedSlug, () => fetchData(true));
           </p>
         </div>
 
-        <ion-grid class="products-grid">
+        <ion-grid :fixed="true" class="products-grid">
           <ion-row>
-            <ion-col v-for="p in filteredProducts" :key="p.id" size-sm="4" size-md="3" size-lg="2.4" size-xl="2">
+            <ion-col v-for="p in filteredProducts" :key="p.id" size-md="3" size-sm="4">
               <ProductCard :product="p" @add="cart.addItem(p)" @show-details="showProductDetail" />
             </ion-col>
           </ion-row>
@@ -391,5 +391,10 @@ watch(selectedSlug, () => fetchData(true));
   .search-results-info p {
     color: var(--koi-neutral-500);
   }
+}
+
+.products-grid ion-row::after {
+  content: '';
+  flex: 6;
 }
 </style>

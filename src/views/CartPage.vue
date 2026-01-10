@@ -138,14 +138,35 @@ const shareCart = async () => {
   const ids = cart.items.map(i => i.id).join(',')
   const shareUrl = `koisend://cart?items=${ids}`
 
-  if (navigator.share !== undefined) {
-    await navigator.share({
-      title: 'Mi carrito en KOISEND',
-      text: 'Mira los productos que elegi',
+  if (!navigator.canShare) {
+    await alertController.create({
+      header: 'Compartir no soportado',
+      message: 'Tu navegador no soporta la funcionalidad de compartir.',
+      buttons: ['OK']
+    }).then(alert => alert.present());
+    // why?
+    const error = await navigator.share({
+      title: 'Mi carrito de compras',
+      text: '¡Mira los productos que he agregado a mi carrito!',
       url: shareUrl
-    })
+    });
+    console.log(error)
+  } else if (navigator.canShare({ url: shareUrl })) {
+    try {
+      await navigator.share({
+        title: 'Mi carrito de compras',
+        text: '¡Mira los productos que he agregado a mi carrito!',
+        url: shareUrl
+      });
+    } catch (error) {
+      console.error('Error al compartir:', error);
+    }
   } else {
-    navigator.clipboard.writeText(shareUrl)
+    await alertController.create({
+      header: 'No se puede compartir',
+      message: 'No se puede compartir el carrito en este momento.',
+      buttons: ['OK']
+    }).then(alert => alert.present());
   }
 }
 

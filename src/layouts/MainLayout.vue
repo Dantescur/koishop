@@ -16,6 +16,7 @@ import {
     IonSegment,
     IonSegmentButton,
     IonLabel,
+    isPlatform,
 } from '@ionic/vue';
 import {
     homeOutline,
@@ -23,6 +24,8 @@ import {
     cartOutline,
     chevronBack,
 } from 'ionicons/icons';
+import { useAppExitConfirmation } from '@/composables/useAppExit';
+import { useNavigationBackButton } from '@/composables/useHardwareBackButton';
 
 const router = useRouter();
 const route = useRoute();
@@ -59,6 +62,12 @@ const goBack = () => {
 watch(() => route.path, (newPath) => {
     activeRoute.value = newPath;
 });
+
+if (isPlatform('capacitor')) {
+    useAppExitConfirmation()
+}
+
+useNavigationBackButton();
 
 </script>
 
@@ -102,8 +111,7 @@ watch(() => route.path, (newPath) => {
                         <ion-icon :icon="cartOutline" />
                         <ion-label>Carrito</ion-label>
                         <ion-badge v-if="cart.totalItems > 0" color="danger" class="nav-badge">
-                            {{ cart.totalItems }}
-                        </ion-badge>
+                            {{ cart.totalItems }} </ion-badge>
                     </ion-segment-button>
                 </ion-segment>
             </ion-toolbar>
@@ -117,40 +125,22 @@ watch(() => route.path, (newPath) => {
     padding: var(--koi-space-1) 0;
 }
 
-.bottom-nav::part(indicator) {
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: var(--ion-color-primary);
-}
-
 .bottom-nav ion-segment-button {
     --color: var(--koi-neutral-500);
     --color-checked: var(--ion-color-primary);
     --indicator-color: transparent;
-    min-height: 56px;
-    position: relative;
 }
 
 .bottom-nav ion-icon {
     font-size: 1.5rem;
-    margin-bottom: 4px;
 }
 
 .bottom-nav ion-label {
-    font-size: var(--koi-text-xs);
     font-weight: var(--koi-font-medium);
     text-transform: none;
 }
 
-.nav-badge {
-    position: absolute;
-    top: 6px;
-    right: 20px;
-    font-size: 10px;
-    padding: 2px 4px;
-    min-width: 16px;
-    height: 16px;
-}
+.nav-badge {}
 
 .cart-button {
     position: relative;
@@ -160,10 +150,6 @@ watch(() => route.path, (newPath) => {
     position: absolute;
     top: 0;
     right: 0;
-    font-size: 10px;
-    padding: 2px 6px;
-    min-width: 16px;
-    height: 16px;
 }
 
 /* Dark mode support */

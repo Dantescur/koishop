@@ -160,6 +160,7 @@ import {
   scaleOutline,
   airplaneOutline
 } from 'ionicons/icons';
+import { useHardwareBackButton } from '@/composables/useHardwareBackButton';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -270,6 +271,10 @@ watch(() => props.isOpen, (newValue) => {
     quantity.value = 1;
   }
 });
+
+
+useHardwareBackButton(props.isOpen, handleClose, 101);
+
 </script>
 
 <style scoped>
@@ -519,7 +524,7 @@ watch(() => props.isOpen, (newValue) => {
 .action-bar {
   display: flex;
   gap: var(--koi-space-3);
-  align-items: flex-end;
+  /* align-items: flex-end; */
 }
 
 /* === Quantity Section === */

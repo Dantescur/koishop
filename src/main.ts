@@ -40,7 +40,9 @@ const pinia = createPinia()
 pinia.use(piniaPLuginPersistedState)
 
 const app = createApp(App)
-  .use(IonicVue)
+  .use(IonicVue, {
+    experimentalCloseWatcher: true
+  })
   .use(pinia)
   .use(router)
 

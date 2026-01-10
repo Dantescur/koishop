@@ -54,8 +54,9 @@ export default defineConfig({
       manifest: {
         name: 'KoiSend - Envíos a Cuba',
         short_name: 'KoiSend',
-        description: 'Envía productos y recarga minutos a Cuba de forma rápida y segura',
+        description: 'Envía productos y recargas a Cuba de forma rápida y segura',
         theme_color: '#D90429',
+        lang: 'es',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
